@@ -8,7 +8,6 @@ import (
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcutil/bech32"
 	"github.com/ipoluianov/rusty/utils"
 )
 
@@ -54,12 +53,13 @@ func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	witnessProgram := btcutil.Hash160(serializedPubKeyCompressed)
-	bech32Address, err := bech32.Encode("bc", append([]byte{0x00}, witnessProgram...))
+	witnessProg := btcutil.Hash160(serializedPubKeyCompressed)
+	addressWitnessPubKeyHash, err := btcutil.NewAddressWitnessPubKeyHash(witnessProg, &chaincfg.MainNetParams)
 	if err != nil {
 		utils.SendError(w, err)
 		return
 	}
+	bech32Address := addressWitnessPubKeyHash.EncodeAddress()
 
 	var res Result
 	res.PrivateKeyCom = privateKeyWIFCom.String()
