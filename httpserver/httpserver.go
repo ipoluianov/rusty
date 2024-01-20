@@ -49,7 +49,7 @@ func (c *HttpServer) thListen() {
 	c.r.HandleFunc("/api/bitcoin/generate_keys", bitcoin.GenerateKeys)
 
 	c.r.NotFoundHandler = http.HandlerFunc(c.processHTTP)
-	c.srv.Handler = c.r
+	c.srv.Handler = c
 
 	logger.Println("HttpServer thListen begin")
 	err := c.srv.ListenAndServe()
@@ -57,6 +57,21 @@ func (c *HttpServer) thListen() {
 		logger.Println("HttpServer thListen error: ", err)
 	}
 	logger.Println("HttpServer thListen end")
+}
+
+func (s *HttpServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if origin := req.Header.Get("Origin"); origin != "" {
+		rw.Header().Set("Access-Control-Allow-Origin", origin)
+		rw.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		rw.Header().Set("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	}
+	// Stop here if its Preflighted OPTIONS request
+	if req.Method == "OPTIONS" {
+		return
+	}
+	// Lets Gorilla work
+	s.r.ServeHTTP(rw, req)
 }
 
 func (c *HttpServer) processHTTP(w http.ResponseWriter, r *http.Request) {
