@@ -12,8 +12,8 @@ import (
 
 func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 	type Result struct {
-		PrivateKeyCom   string `json:"private_key_com"`
-		PrivateKeyUncom string `json:"private_key_uncom"`
+		PrivateKeyCom   string `json:"private_key_c"`
+		PrivateKeyUncom string `json:"private_key_u"`
 		PublicKey       string `json:"public_key"`
 		Address         string `json:"address"`
 	}
