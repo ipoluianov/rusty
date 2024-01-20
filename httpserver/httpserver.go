@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/ipoluianov/rusty/api/bitcoin"
 	"github.com/ipoluianov/rusty/logger"
 )
 
@@ -44,6 +45,9 @@ func (c *HttpServer) thListen() {
 	}
 
 	c.r = mux.NewRouter()
+
+	c.r.HandleFunc("/api/w", bitcoin.GenerateKeys)
+
 	c.r.NotFoundHandler = http.HandlerFunc(c.processHTTP)
 	c.srv.Handler = c.r
 
