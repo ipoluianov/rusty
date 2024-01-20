@@ -17,6 +17,7 @@ func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 		PrivateKeyUncom       string `json:"private_key_u"`
 		PublicKeyCompressed   string `json:"public_key_compressed"`
 		PublicKeyUncompressed string `json:"public_key_uncompressed"`
+		AddressP2PKHHex       string `json:"address_p2pkh_hex"`
 		AddressP2PKH          string `json:"address_p2pkh"`
 	}
 
@@ -55,7 +56,7 @@ func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 	res.PrivateKeyUncom = privateKeyWIFUnCom.String()
 	res.PublicKeyCompressed = serializedPubKeyCompressedHex
 	res.PublicKeyUncompressed = serializedPubKeyUncompressedHex
-	res.AddressP2PKH = p2pkhAddress.String()
+	res.AddressP2PKHHex = p2pkhAddress.String()
 	res.AddressP2PKH = p2pkhAddress.EncodeAddress()
 
 	utils.SendJson(w, res, nil)
