@@ -1,6 +1,7 @@
 package bitcoin
 
 import (
+	"encoding/hex"
 	"log"
 	"net/http"
 
@@ -12,10 +13,11 @@ import (
 
 func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 	type Result struct {
-		PrivateKeyCom   string `json:"private_key_c"`
-		PrivateKeyUncom string `json:"private_key_u"`
-		PublicKey       string `json:"public_key"`
-		Address         string `json:"address"`
+		PrivateKeyCom         string `json:"private_key_c"`
+		PrivateKeyUncom       string `json:"private_key_u"`
+		PublicKeyCompressed   string `json:"public_key_compressed"`
+		PublicKeyUncompressed string `json:"public_key_uncompressed"`
+		Address               string `json:"address"`
 	}
 
 	privateKey, err := btcec.NewPrivateKey()
@@ -35,10 +37,19 @@ func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	publicKey := privateKey.PubKey()
+
+	serializedPubKeyCompressed := publicKey.SerializeCompressed()     // Сжатый формат
+	serializedPubKeyUncompressed := publicKey.SerializeUncompressed() // Несжатый формат
+
+	serializedPubKeyCompressedHex := hex.EncodeToString(serializedPubKeyCompressed)
+	serializedPubKeyUncompressedHex := hex.EncodeToString(serializedPubKeyUncompressed)
+
 	var res Result
 	res.PrivateKeyCom = privateKeyWIFCom.String()
 	res.PrivateKeyUncom = privateKeyWIFUnCom.String()
-	res.PublicKey = ""
+	res.PublicKeyCompressed = serializedPubKeyCompressedHex
+	res.PublicKeyUncompressed = serializedPubKeyUncompressedHex
 	res.Address = ""
 
 	utils.SendJson(w, res, nil)
