@@ -50,13 +50,15 @@ func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 
 	p2pkhAddress, err := btcutil.NewAddressPubKey(publicKey.SerializeCompressed(), &chaincfg.MainNetParams)
 	if err != nil {
-		log.Fatal(err)
+		utils.SendError(w, err)
+		return
 	}
 
 	witnessProgram := btcutil.Hash160(serializedPubKeyCompressed)
 	bech32Address, err := bech32.Encode("bc", append([]byte{0x00}, witnessProgram...))
 	if err != nil {
-		log.Fatal(err)
+		utils.SendError(w, err)
+		return
 	}
 
 	var res Result
