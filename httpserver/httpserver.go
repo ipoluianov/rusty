@@ -40,7 +40,7 @@ func (c *HttpServer) Start() {
 
 func (c *HttpServer) thListen() {
 	c.srv = &http.Server{
-		Addr: ":80",
+		Addr: ":8488",
 	}
 
 	c.r = mux.NewRouter()
