@@ -40,30 +40,31 @@ func NewHttpServer() *HttpServer {
 
 func (c *HttpServer) Start() {
 	logger.Println("HttpServer start")
-	go c.thListen()
+	//go c.thListen()
 	go c.thListenTLS()
 }
 
-func (c *HttpServer) thListen() {
-	c.srv = &http.Server{
-		Addr: ":8489",
+/*
+	func (c *HttpServer) thListen() {
+		c.srv = &http.Server{
+			Addr: ":8489",
+		}
+
+		c.r = mux.NewRouter()
+
+		c.r.HandleFunc("/api/bitcoin/generate_keys", bitcoin.GenerateKeys)
+
+		c.r.NotFoundHandler = http.HandlerFunc(c.processHTTP)
+		c.srv.Handler = c
+
+		logger.Println("HttpServer thListen begin")
+		err := c.srv.ListenAndServe()
+		if err != nil {
+			logger.Println("HttpServer thListen error: ", err)
+		}
+		logger.Println("HttpServer thListen end")
 	}
-
-	c.r = mux.NewRouter()
-
-	c.r.HandleFunc("/api/bitcoin/generate_keys", bitcoin.GenerateKeys)
-
-	c.r.NotFoundHandler = http.HandlerFunc(c.processHTTP)
-	c.srv.Handler = c
-
-	logger.Println("HttpServer thListen begin")
-	err := c.srv.ListenAndServe()
-	if err != nil {
-		logger.Println("HttpServer thListen error: ", err)
-	}
-	logger.Println("HttpServer thListen end")
-}
-
+*/
 func (c *HttpServer) redirectTLS(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
 }
@@ -87,7 +88,7 @@ func (c *HttpServer) thListenTLS() {
 	c.rTLS = mux.NewRouter()
 	c.rTLS.HandleFunc("/api/bitcoin/generate_keys", bitcoin.GenerateKeys)
 	c.rTLS.NotFoundHandler = http.HandlerFunc(c.processFile)
-	c.srvTLS.Handler = c.rTLS
+	c.srvTLS.Handler = c
 
 	logger.Println("HttpServerTLS thListen begin")
 	listener, err := tls.Listen("tcp", ":8488", tlsConfig)
@@ -115,7 +116,7 @@ func (s *HttpServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// Lets Gorilla work
-	s.r.ServeHTTP(rw, req)
+	s.rTLS.ServeHTTP(rw, req)
 }
 
 func (c *HttpServer) processHTTP(w http.ResponseWriter, r *http.Request) {
