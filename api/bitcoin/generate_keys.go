@@ -56,6 +56,7 @@ func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 	res.PublicKeyCompressed = serializedPubKeyCompressedHex
 	res.PublicKeyUncompressed = serializedPubKeyUncompressedHex
 	res.AddressP2PKH = p2pkhAddress.String()
+	res.AddressP2PKH = p2pkhAddress.EncodeAddress()
 
 	utils.SendJson(w, res, nil)
 }
