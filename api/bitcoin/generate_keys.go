@@ -17,7 +17,7 @@ func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 		PrivateKeyUncom       string `json:"private_key_u"`
 		PublicKeyCompressed   string `json:"public_key_compressed"`
 		PublicKeyUncompressed string `json:"public_key_uncompressed"`
-		Address               string `json:"address"`
+		AddressP2PKH          string `json:"address_p2pkh"`
 	}
 
 	privateKey, err := btcec.NewPrivateKey()
@@ -39,18 +39,23 @@ func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 
 	publicKey := privateKey.PubKey()
 
-	serializedPubKeyCompressed := publicKey.SerializeCompressed()     // Сжатый формат
-	serializedPubKeyUncompressed := publicKey.SerializeUncompressed() // Несжатый формат
+	serializedPubKeyCompressed := publicKey.SerializeCompressed()
+	serializedPubKeyUncompressed := publicKey.SerializeUncompressed()
 
 	serializedPubKeyCompressedHex := hex.EncodeToString(serializedPubKeyCompressed)
 	serializedPubKeyUncompressedHex := hex.EncodeToString(serializedPubKeyUncompressed)
+
+	p2pkhAddress, err := btcutil.NewAddressPubKey(publicKey.SerializeCompressed(), &chaincfg.MainNetParams)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	var res Result
 	res.PrivateKeyCom = privateKeyWIFCom.String()
 	res.PrivateKeyUncom = privateKeyWIFUnCom.String()
 	res.PublicKeyCompressed = serializedPubKeyCompressedHex
 	res.PublicKeyUncompressed = serializedPubKeyUncompressedHex
-	res.Address = ""
+	res.AddressP2PKH = p2pkhAddress.String()
 
 	utils.SendJson(w, res, nil)
 }
