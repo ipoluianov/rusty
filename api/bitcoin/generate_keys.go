@@ -7,7 +7,7 @@ import (
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcutil/bech32"
 	"github.com/ipoluianov/rusty/utils"
 )
 
@@ -28,15 +28,24 @@ func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 	publicKey := privateKey.PubKey()
 
 	// Генерация Bitcoin-адреса
-	address, err := btcutil.NewAddressPubKey(publicKey.SerializeCompressed(), &chaincfg.MainNetParams)
+	/*address, err := btcutil.NewAddressPubKey(publicKey.SerializeCompressed(), &chaincfg.MainNetParams)
 	if err != nil {
 		log.Fatal(err)
+	}*/
+
+	witnessProgram := btcutil.Hash160(publicKey.SerializeUncompressed())
+
+	// Кодирование в Bech32
+	bech32Address, err := bech32.Encode("bc", append([]byte{0x00}, witnessProgram...))
+	if err != nil {
+		utils.SendError(w, err)
+		return
 	}
 
 	var res Result
 	res.PrivateKey = hex.EncodeToString(privateKey.Serialize())
 	res.PublicKey = hex.EncodeToString(publicKey.SerializeUncompressed())
-	res.Address = address.String()
+	res.Address = bech32Address
 
 	utils.SendJson(w, res, nil)
 }
