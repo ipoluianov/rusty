@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"net"
 	"net/http"
@@ -22,6 +23,9 @@ type Host struct {
 type HttpServer struct {
 	srv *http.Server
 	r   *mux.Router
+
+	srvTLS *http.Server
+	rTLS   *mux.Router
 }
 
 func CurrentExePath() string {
@@ -37,11 +41,12 @@ func NewHttpServer() *HttpServer {
 func (c *HttpServer) Start() {
 	logger.Println("HttpServer start")
 	go c.thListen()
+	go c.thListenTLS()
 }
 
 func (c *HttpServer) thListen() {
 	c.srv = &http.Server{
-		Addr: ":8488",
+		Addr: ":8489",
 	}
 
 	c.r = mux.NewRouter()
@@ -57,6 +62,45 @@ func (c *HttpServer) thListen() {
 		logger.Println("HttpServer thListen error: ", err)
 	}
 	logger.Println("HttpServer thListen end")
+}
+
+func (c *HttpServer) redirectTLS(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
+}
+
+func (c *HttpServer) thListenTLS() {
+	tlsConfig := &tls.Config{}
+	tlsConfig.Certificates = make([]tls.Certificate, 0)
+
+	cert, err := tls.LoadX509KeyPair(CurrentExePath()+"/bundle.crt", CurrentExePath()+"/private.key")
+	if err == nil {
+		tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
+	} else {
+		logger.Println("loading certificates error:", err.Error())
+	}
+
+	c.srvTLS = &http.Server{
+		Addr:      ":8488",
+		TLSConfig: tlsConfig,
+	}
+
+	c.rTLS = mux.NewRouter()
+	c.rTLS.HandleFunc("/api/bitcoin/generate_keys", bitcoin.GenerateKeys)
+	c.rTLS.NotFoundHandler = http.HandlerFunc(c.processFile)
+	c.srvTLS.Handler = c.rTLS
+
+	logger.Println("HttpServerTLS thListen begin")
+	listener, err := tls.Listen("tcp", ":443", tlsConfig)
+	if err != nil {
+		logger.Println("TLS Listener error:", err)
+		return
+	}
+
+	err = c.srvTLS.Serve(listener)
+	if err != nil {
+		logger.Println("HttpServerTLS thListen error: ", err)
+	}
+	logger.Println("HttpServerTLS thListen end")
 }
 
 func (s *HttpServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
