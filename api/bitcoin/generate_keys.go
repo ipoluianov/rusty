@@ -12,9 +12,10 @@ import (
 
 func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 	type Result struct {
-		PrivateKey string `json:"private_key"`
-		PublicKey  string `json:"public_key"`
-		Address    string `json:"address"`
+		PrivateKeyCom   string `json:"private_key_com"`
+		PrivateKeyUncom string `json:"private_key_uncom"`
+		PublicKey       string `json:"public_key"`
+		Address         string `json:"address"`
 	}
 
 	privateKey, err := btcec.NewPrivateKey()
@@ -22,13 +23,21 @@ func GenerateKeys(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	privateKeyWIF, err := btcutil.NewWIF(privateKey, &chaincfg.MainNetParams, false)
+	privateKeyWIFCom, err := btcutil.NewWIF(privateKey, &chaincfg.MainNetParams, true)
 	if err != nil {
-		log.Fatal(err)
+		utils.SendError(w, err)
+		return
+	}
+
+	privateKeyWIFUnCom, err := btcutil.NewWIF(privateKey, &chaincfg.MainNetParams, false)
+	if err != nil {
+		utils.SendError(w, err)
+		return
 	}
 
 	var res Result
-	res.PrivateKey = privateKeyWIF.String()
+	res.PrivateKeyCom = privateKeyWIFCom.String()
+	res.PrivateKeyUncom = privateKeyWIFUnCom.String()
 	res.PublicKey = ""
 	res.Address = ""
 
