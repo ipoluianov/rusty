@@ -1,0 +1,2 @@
+# rusty
+REST Server (stateless)
