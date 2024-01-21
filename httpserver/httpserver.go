@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/ipoluianov/rusty/api/bitcoin"
+	"github.com/ipoluianov/rusty/bitcoinpeer"
 	"github.com/ipoluianov/rusty/logger"
 )
 
@@ -20,8 +21,9 @@ type Host struct {
 }
 
 type HttpServer struct {
-	srvTLS *http.Server
-	rTLS   *mux.Router
+	srvTLS      *http.Server
+	rTLS        *mux.Router
+	bitcoinPeer bitcoinpeer.BitcoinPeer
 }
 
 func CurrentExePath() string {
@@ -31,11 +33,13 @@ func CurrentExePath() string {
 
 func NewHttpServer() *HttpServer {
 	var c HttpServer
+	c.bitcoinPeer = *bitcoinpeer.NewBitcoinPeer()
 	return &c
 }
 
 func (c *HttpServer) Start() {
 	logger.Println("HttpServer start")
+	c.bitcoinPeer.Start()
 	go c.thListenTLS()
 }
 
@@ -57,6 +61,7 @@ func (c *HttpServer) thListenTLS() {
 
 	c.rTLS = mux.NewRouter()
 	c.rTLS.HandleFunc("/api/bitcoin/generate_keys", bitcoin.GenerateKeys)
+	c.rTLS.HandleFunc("/api/bitcoin/dns_seed_addresses", bitcoin.DNSSeedAddresses)
 	c.rTLS.NotFoundHandler = http.HandlerFunc(c.processFile)
 	c.srvTLS.Handler = c
 
@@ -91,6 +96,8 @@ func (s *HttpServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 func (c *HttpServer) Stop() error {
 	var err error
+
+	c.bitcoinPeer.Stop()
 
 	{
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
