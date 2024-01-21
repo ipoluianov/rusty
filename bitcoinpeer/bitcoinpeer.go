@@ -63,10 +63,10 @@ func (c *BitcoinPeer) thDnsSeedMonitoring() {
 
 	for !c.stopping {
 		for {
-			if c.stopping || time.Since(dtOperationTime) > time.Duration(60000)*time.Millisecond {
+			if c.stopping || time.Since(dtOperationTime) > time.Duration(5*60000)*time.Millisecond {
 				break
 			}
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 		}
 		dtOperationTime = time.Now()
 
