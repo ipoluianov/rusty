@@ -86,13 +86,8 @@ func GetDir(path string) ([]FileInfo, error) {
 		return filesList[i].Name < filesList[j].Name
 	})
 
-	for _, d := range dirsList {
-		result = append(result, d)
-	}
-
-	for _, f := range filesList {
-		result = append(result, f)
-	}
+	result = append(result, dirsList...)
+	result = append(result, filesList...)
 
 	return result, nil
 }
