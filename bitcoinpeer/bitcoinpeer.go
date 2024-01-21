@@ -38,7 +38,7 @@ func (c *BitcoinPeer) Get() (dt time.Time, ips []string) {
 	ips = c.addresses
 	c.mtx.Unlock()
 
-	logger.Println("processed:", c.addresses, ips)
+	//logger.Println("processed:", c.addresses, ips)
 	return
 }
 
@@ -83,7 +83,7 @@ func (c *BitcoinPeer) thDnsSeedMonitoring() {
 		c.lastUpdateDT = time.Now()
 		c.mtx.Unlock()
 
-		logger.Println("processed:", c.addresses)
+		//logger.Println("processed:", c.addresses)
 	}
 	c.started = false
 }

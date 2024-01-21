@@ -23,7 +23,7 @@ type Host struct {
 type HttpServer struct {
 	srvTLS      *http.Server
 	rTLS        *mux.Router
-	bitcoinPeer bitcoinpeer.BitcoinPeer
+	bitcoinPeer *bitcoinpeer.BitcoinPeer
 }
 
 func CurrentExePath() string {
@@ -33,7 +33,7 @@ func CurrentExePath() string {
 
 func NewHttpServer() *HttpServer {
 	var c HttpServer
-	c.bitcoinPeer = *bitcoinpeer.NewBitcoinPeer()
+	c.bitcoinPeer = bitcoinpeer.NewBitcoinPeer()
 	return &c
 }
 
