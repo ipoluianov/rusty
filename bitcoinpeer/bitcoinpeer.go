@@ -1,6 +1,7 @@
 package bitcoinpeer
 
 import (
+	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -9,6 +10,7 @@ import (
 )
 
 type BitcoinPeer struct {
+	id           string
 	started      bool
 	stopping     bool
 	addresses    []string
@@ -21,7 +23,7 @@ var BitcoinPeerInstance *BitcoinPeer
 func NewBitcoinPeer() *BitcoinPeer {
 	var c BitcoinPeer
 	BitcoinPeerInstance = &c
-	return &c
+	return BitcoinPeerInstance
 }
 
 func (c *BitcoinPeer) Start() {
@@ -30,6 +32,10 @@ func (c *BitcoinPeer) Start() {
 
 func (c *BitcoinPeer) Stop() {
 	c.stopping = true
+}
+
+func (c *BitcoinPeer) Id() string {
+	return fmt.Sprint(c)
 }
 
 func (c *BitcoinPeer) Get() (dt time.Time, ips []string) {
@@ -62,6 +68,7 @@ func (c *BitcoinPeer) thDnsSeedMonitoring() {
 			}
 			time.Sleep(10 * time.Millisecond)
 		}
+		dtOperationTime = time.Now()
 
 		addresses := make([]string, 0)
 
@@ -83,7 +90,7 @@ func (c *BitcoinPeer) thDnsSeedMonitoring() {
 		c.lastUpdateDT = time.Now()
 		c.mtx.Unlock()
 
-		//logger.Println("processed:", c.addresses)
+		logger.Println("processed:", c.addresses)
 	}
 	c.started = false
 }
