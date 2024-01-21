@@ -71,6 +71,7 @@ func (c *BitcoinPeer) thDnsSeedMonitoring() {
 			}
 
 			for _, ip := range ips {
+				logger.Println("bitcoin thDnsSeedMonitoring rcv addr:", ip.String())
 				addresses = append(addresses, ip.String())
 			}
 		}
